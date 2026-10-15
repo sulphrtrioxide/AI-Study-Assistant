@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GuruPintar AI - Asisten Pembelajaran Offline Interaktif</title>
+  <meta name="description" content="Aplikasi web asisten belajar cerdas berbasis AI yang berjalan 100% offline tanpa internet. Menjawab pertanyaan, merangkum materi, dan menyediakan kuis interaktif berdasarkan modul pembelajaran.">
+  <meta name="theme-color" content="#4f46e5">
+
+  <!-- Favicon & PWA Icons -->
+  <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
+  <link rel="apple-touch-icon" href="assets/icon.svg">
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Fonts (offline fallback to modern system sans) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- Core Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-layout" id="app">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand-section">
+        <div class="app-logo">
+          <img src="assets/icon.svg" alt="GuruPintar AI Logo">
+        </div>
+        <div class="brand-title">
+          <span class="gradient-text">GuruPintar</span>
+          <span style="font-weight: 800; color: var(--primary);">AI</span>
+          <span class="offline-pill" title="Aplikasi berjalan sepenuhnya di peramban tanpa internet">
+            <span class="offline-dot"></span> 100% Offline
+          </span>
+        </div>
+      </div>
+
+      <!-- Center: Active Study Module Pill -->
+      <div class="active-module-bar" id="activeModuleBar" title="Klik untuk mengganti atau mengelola modul belajar">
+        <span class="module-icon-badge" id="activeModuleIcon">📘</span>
+        <div class="module-meta-info">
+          <div class="module-label-tag">
+            <span>🔒 Modul Aktif:</span>
+            <span id="activeModuleSubject">Sejarah</span>
+          </div>
+          <div class="module-active-title" id="activeModuleTitle">Sejarah Kemerdekaan Indonesia</div>
+        </div>
+        <span style="font-size: 0.8rem; color: var(--text-muted); margin-left: auto;">▼</span>
+      </div>
+
+      <!-- Header Actions -->
+      <div class="header-actions">
+        <button class="btn btn-secondary" id="quickQuizBtn" title="Mulai kuis interaktif dari modul ini">
+          <span>🎯</span> <span style="display: inline-block;">Kuis Cepat</span>
+        </button>
+        <button class="btn btn-primary" id="moduleManagerBtn" title="Buka Koleksi Modul & Tambah Modul Baru">
+          <span>📚</span> <span style="display: inline-block;">Kelola Modul</span>
+        </button>
+        <div class="chip-btn" id="scoreBadge" style="cursor: default;" title="Skor Pemahaman Kuis">
+          <span>🌟</span> <strong id="scoreCounter">0 Pts</strong>
+        </div>
+        <button class="btn-icon" id="themeToggleBtn" title="Ganti Tema (Gelap/Terang)">
+          🌙
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Chat Workspace -->
+    <main class="chat-main-container">
+      <div class="chat-history" id="chatHistory">
+        <!-- Welcome Hero Banner -->
+        <section class="welcome-hero">
+          <div class="welcome-header">
+            <div class="welcome-avatar">
+              <img src="assets/bot-avatar.svg" alt="Guru Pintar Avatar" width="46" height="46">
+            </div>
+            <div class="welcome-text">
+              <h2>Halo! Saya Asisten Belajar Cerdasmu 👋</h2>
+              <p>Saya siap membantumu memahami materi, menjawab pertanyaan, dan menguji pemahamanmu secara 100% interaktif dan offline.</p>
+            </div>
+          </div>
+
+          <!-- Module Hidden Privacy Shield -->
+          <div class="privacy-shield-banner">
+            <span class="shield-icon">🔒</span>
+            <div>
+              <strong>Materi Modul Terlindungi di Memori AI</strong><br>
+              Teks modul tidak ditampilkan secara langsung di layar agar kamu dapat berlatih aktif dan menguji daya ingat. AI akan menjelaskan jawaban berdasarkan modul secara terarah.
+            </div>
+          </div>
+
+          <!-- Quick Starter Prompts -->
+          <div>
+            <div class="quick-starter-title" style="margin-bottom: 8px;">Mulai Belajar Cepat:</div>
+            <div class="quick-chips-grid">
+              <button class="chip-btn" data-query="Uji pemahaman saya dengan kuis interaktif!">
+                <span>🎯</span> Uji Pemahaman (Kuis)
+              </button>
+              <button class="chip-btn" data-query="Rangkum seluruh poin penting materi modul ini!">
+                <span>📋</span> Rangkum Materi
+              </button>
+              <button class="chip-btn" data-query="Apa saja konsep dan rumus kunci dalam modul ini?">
+                <span>📐</span> Konsep & Rumus Kunci
+              </button>
+              <button class="chip-btn" data-query="Beri saya contoh nyata dalam kehidupan sehari-hari!">
+                <span>🌟</span> Contoh Penerapan
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Initial Assistant Welcome Message -->
+        <div class="message-row assistant-row">
+          <div class="msg-avatar">
+            <img src="assets/bot-avatar.svg" alt="Tutor" width="28" height="28">
+          </div>
+          <div class="msg-bubble-wrapper" style="max-width: 100%;">
+            <div class="msg-bubble">
+              <p>Selamat datang! Modul yang sedang aktif adalah <strong>Sejarah Kemerdekaan Indonesia</strong>.</p>
+              <p>Kamu bisa langsung bertanya tentang peristiwa, tokoh penting, latar belakang Rengasdengklok, atau ketik <em>"kuis"</em> kapan saja untuk menguji pemahamanmu!</p>
+              <div class="msg-actions-toolbar">
+                <button class="msg-action-btn btn-speak" title="Dengarkan penjelasan suara">
+                  <span>🔊</span> <span class="speak-label">Dengarkan</span>
+                </button>
+                <button class="msg-action-btn btn-copy" title="Salin ke clipboard">
+                  <span>📋</span> Salin
+                </button>
+              </div>
+            </div>
+            <div class="suggested-chips-bar">
+              <button class="chip-btn chip-action" data-query="Apa latar belakang peristiwa Rengasdengklok?">💡 Apa latar belakang peristiwa Rengasdengklok?</button>
+              <button class="chip-btn chip-action" data-query="Siapa yang mengetik naskah proklamasi?">💡 Siapa yang mengetik naskah proklamasi?</button>
+              <button class="chip-btn chip-action" data-query="Beri kuis tentang proklamasi kemerdekaan">💡 Beri kuis tentang proklamasi kemerdekaan</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat Input Area -->
+      <div class="chat-input-wrapper">
+        <form class="chat-input-box" id="chatForm">
+          <button type="button" class="btn-icon" id="clearChatBtn" title="Bersihkan riwayat percakapan">
+            🗑️
+          </button>
+          <textarea
+            class="chat-textarea"
+            id="chatInput"
+            placeholder="Tanyakan konsep materi, minta rumus, minta contoh, atau ketik 'kuis'..."
+            rows="1"
+          ></textarea>
+          <button type="submit" class="send-btn" id="sendBtn" title="Kirim Pertanyaan" disabled>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </form>
+      </div>
+    </main>
+
+    <!-- Modal: Kelola & Koleksi Modul -->
+    <div class="modal-overlay" id="moduleModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-title">
+            <span>📚</span>
+            <span>Perpustakaan & Kelola Modul Belajar</span>
+          </div>
+          <button class="btn-icon" id="closeModalBtn" title="Tutup">✕</button>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="modal-tabs">
+          <button class="modal-tab-btn active" data-tab="tabPresets">
+            Preset Modul Bawaan (10)
+          </button>
+          <button class="modal-tab-btn" data-tab="tabAddCustom">
+            + Tambah Modul Sendiri
+          </button>
+          <button class="modal-tab-btn" data-tab="tabMyModules">
+            Modul Kustom Saya
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <!-- Tab 1: Preset Modules -->
+          <div class="modal-tab-content" id="tabPresets" style="display: block;">
+            <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 16px;">
+              Pilih salah satu dari modul pembelajaran resmi di bawah. Saat modul dipilih, asisten AI akan mengindeks materi di latar belakang tanpa membocorkan jawaban langsung.
+            </p>
+            <div class="presets-grid" id="presetsContainer">
+              <!-- Dynamically populated from js/presets.js -->
+            </div>
+          </div>
+
+          <!-- Tab 2: Add Custom Module Form -->
+          <div class="modal-tab-content" id="tabAddCustom" style="display: none;">
+            <form class="custom-form" id="addModuleForm">
+              <div class="form-group">
+                <label class="form-label" for="customModuleTitle">Judul Modul Pembelajaran *</label>
+                <input
+                  type="text"
+                  id="customModuleTitle"
+                  class="form-input"
+                  placeholder="Contoh: Kimia Organik Bab 3 - Senyawa Hidrokarbon"
+                  required
+                >
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="customModuleSubject">Mata Pelajaran / Bidang Studi</label>
+                <input
+                  type="text"
+                  id="customModuleSubject"
+                  class="form-input"
+                  placeholder="Contoh: Kimia, Fisika, Biologi, Sejarah, Teknik..."
+                >
+              </div>
+
+              <!-- File Dropzone -->
+              <div class="form-group">
+                <label class="form-label">Unggah Berkas Materi (.txt, .md, .json)</label>
+                <div class="dropzone" id="fileDropzone">
+                  <div class="dropzone-icon">📁</div>
+                  <div class="dropzone-text">Klik untuk memilih file atau seret file ke sini</div>
+                  <div class="dropzone-subtext">Mendukung file teks materi catatan pelajaran atau modul silabus</div>
+                </div>
+                <input type="file" id="moduleFileInput" accept=".txt,.md,.json" style="display: none;">
+              </div>
+
+              <!-- Or Paste Content -->
+              <div class="form-group">
+                <label class="form-label" for="customModuleContent">Atau Tulis / Tempel (Paste) Teks Materi Modul *</label>
+                <textarea
+                  id="customModuleContent"
+                  class="form-textarea"
+                  placeholder="Tempelkan bab materi, catatan pelajaran, atau rangkuman silabus di sini..."
+                  required
+                ></textarea>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">
+                  🔒 <em>Keamanan & Privasi:</em> Seluruh materi disimpan di memori peramban lokalmu (localStorage) dan diproses 100% offline. Teks modul tidak akan diumbar di layar chat agar pengalaman belajar tetap menantang.
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary" style="padding: 12px; font-size: 0.92rem;">
+                💾 Simpan & Aktifkan Modul Ini
+              </button>
+            </form>
+          </div>
+
+          <!-- Tab 3: My Custom Modules -->
+          <div class="modal-tab-content" id="tabMyModules" style="display: none;">
+            <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 16px;">
+              Daftar modul yang telah kamu tambahkan sendiri ke aplikasi ini. Disimpan secara lokal dan dapat digunakan offline.
+            </p>
+            <div class="presets-grid" id="customModulesList">
+              <!-- Dynamically populated from localStorage -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toastContainer"></div>
+  </div>
+
+  <!-- Scripts (Cache-busted for instant updates) -->
+  <script src="js/presets.js?v=5"></script>
+  <script src="js/ai-engine.js?v=5"></script>
+  <script src="js/app.js?v=5"></script>
+</body>
+</html>
